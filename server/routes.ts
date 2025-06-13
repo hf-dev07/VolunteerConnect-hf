@@ -4,6 +4,24 @@ import { storage } from "./storage";
 import { insertProjectSchema, insertApplicationSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Existing routes...
+
+  // New Login Endpoint
+  app.post("/api/login", async (req, res) => {
+    const { username, password } = req.body;
+
+    // IMPORTANT: In a real application, you would validate these credentials
+    // against a database and securely hash/compare passwords.
+    // This is a placeholder for demonstration purposes only.
+    if (username === "admin" && password === "password") {
+      // For now, we'll just send a success message.
+      // In a real application, you would establish a session here.
+      res.status(200).json({ message: "Login successful!" });
+    } else {
+      res.status(401).json({ message: "Invalid username or password" });
+    }
+  });
+
   // Get all projects
   app.get("/api/projects", async (req, res) => {
     try {
@@ -33,17 +51,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/applications", async (req, res) => {
     try {
       const validatedData = insertApplicationSchema.parse(req.body);
-      
+
       // Create the application
       const application = await storage.createApplication(validatedData);
-      
+
       // Update project status to accepted
       await storage.updateProjectStatus(validatedData.projectId, "accepted");
-      
+
       // Simulate email confirmation
       console.log("📧 Email notification sent to:", validatedData.volunteerEmail);
       console.log("✅ Application accepted for project ID:", validatedData.projectId);
-      
+
       res.status(201).json(application);
     } catch (error) {
       if (error instanceof Error) {
